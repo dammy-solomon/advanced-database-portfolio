@@ -200,16 +200,6 @@ and no more — a 31× reduction in documents touched.
 
 ## 7. Implementation notes
 
-<!-- WRITE THIS YOURSELF.
-     (HTML comment - invisible in GitHub's rendered view. Click "Raw" or
-     the edit pencil to read it.)
+Adding `idx_advisor_status` reduced `totalDocsExamined` from `33,024` (`COLLSCAN`, `28 ms`) to `1,051` (`IXSCAN`, `10 ms`), matching the exact result count.
 
-     Worth covering:
-     - Record your actual explain numbers: totalDocsExamined and
-       executionTimeMillis, before and after the indexes.
-     - Whether embedding still looks right to you after running Q3,
-       where every aggregation starts with $unwind.
-     - What you think of keeping two databases in sync in a real system.
-     - Anything about the Atlas setup that surprised you. -->
-
-_To be completed._
+Embedding `interactions` works well for single-learner lookups by `_id`, but Q3 showed the trade-off: cross-learner aggregations must start with `$unwind` across all `33,024` documents (`214,656` array elements). I would still embed for NOU since single-learner views dominate advisor work, while keeping cohort-wide analytics in PostgreSQL. In production, keeping both stores in sync would require Change Data Capture (CDC) or an outbox pattern rather than fragile dual writes. On Atlas M0 (`eu-west-3`), Compass auto-detected the 52 MB JSON Lines format during import, though indexing `interactions.outcome` generated `214,656` multikey entries—showing how fast array indexes grow.

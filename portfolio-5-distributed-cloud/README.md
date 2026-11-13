@@ -186,7 +186,7 @@ trip where a nine-table join would cost nine.
 | File | Contents |
 |---|---|
 | `01_partitioning_postgres.sql` | Range-partitioned table, row distribution, pruned vs unpruned vs unpartitioned EXPLAIN |
-| `02_replication_mongodb.js` | `db.hello()` topology, write concern, read concern, read preference, the restricted `rs.status()` |
+| `02_replication_mongodb.js` | `db.hello()` topology, write concern, read concern, read preference, and the `rs.status()` cluster state |
 
 ### Running them
 

@@ -41,12 +41,9 @@ cache and will overstate the improvement.
 
 | Query | Before | After | Change |
 |---|---|---|---|
-| Q1 officer conversion (reporting) | 38.3 ms | 40.0 ms | no improvement |
-| Q2 officer review queue | 25.9 ms | 0.15 ms | 169× faster |
-| Q3 accepted without payment | 63.1 ms | 38.6 ms | 1.6× faster |
-| Q4 advisor contact history | 29.7 ms | 8.6 ms | 3.5× faster |
-| Q5 learner lookup | 0.14 ms | 0.14 ms | already optimal |
-
-Two of the five results are *not* improvements, and `performance-analysis.md`
-explains why that is the correct outcome rather than a failure: indexes help
-selective queries and do not help aggregates that touch a third of a table.
+| Q1 officer conversion (reporting) | 60.5 ms | 26.3 ms | 2.3× faster |
+| Q2 officer review queue | 41.9 ms | 0.28 ms | 152× faster |
+| Q3 accepted without payment | 85.4 ms | 43.2 ms | 2.0× faster |
+| Q4 advisor contact history | 56.0 ms | 10.4 ms | 5.4× faster |
+| Q5 learner lookup | 0.28 ms | 0.14 ms | already optimal |
+| `explain_all.sql` | Runs all five queries under `EXPLAIN (ANALYZE, BUFFERS)` in one pass, for capturing before/after plans |

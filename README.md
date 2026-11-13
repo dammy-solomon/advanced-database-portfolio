@@ -99,6 +99,14 @@ Each portfolio folder has its own README with specific instructions.
 
 ---
 
+## Technical reflection
+
+Building all five activities on Northgate Open University showed how design choices made early in schema modelling ripple through every layer of a database system. Denormalising `cohort.seats_taken` in Portfolio 1 simplified reporting queries in Portfolio 2, but immediately created the lost-update race condition I had to solve with `SELECT ... FOR UPDATE` and `SERIALIZABLE` isolation in Portfolio 3. Similarly, moving learner engagement to MongoDB in Portfolio 4 eliminated nine-table joins and reduced WAN round trips to Atlas M0 in Portfolio 5, at the cost of `$unwind` overhead on cross-learner aggregations and the operational complexity of keeping two stores synchronised.
+
+The biggest technical lessons came from verifying assumptions against actual execution plans and concurrency tests rather than relying on theory alone: discovering that PostgreSQL hoisted an uncorrelated `random()` subquery into an `InitPlan`, seeing `SERIALIZABLE` require genuinely overlapping reads before raising SQLSTATE `40001`, and measuring how partitioning speeds up pruned queries (`17.5 ms`) while slowing down unpruned scans (`193.9 ms`).
+
+---
+
 ## AI Use Declaration
 
 **Tool used:** Claude (Anthropic).

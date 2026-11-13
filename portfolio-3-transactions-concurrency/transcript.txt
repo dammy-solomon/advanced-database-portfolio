@@ -1,0 +1,45 @@
+======================================================================
+DEMO 3   LOST UPDATE AT READ COMMITTED (no locking)
+======================================================================
+  [start] seats_taken=49/50   accepted=0   enrolments=0
+  Session A reads seats_taken = 49
+  Session B reads seats_taken = 49    <-- both believe a seat is free
+  Session A COMMIT
+  Session B COMMIT
+  [end] seats_taken=50/50   accepted=2   enrolments=2
+  ANOMALY: 2 learners enrolled, but the counter advanced by only 1.
+  Session B overwrote Session A's write. The lost update is silent -- no error.
+
+======================================================================
+DEMO 4   FIX WITH SELECT ... FOR UPDATE (pessimistic locking)
+======================================================================
+  [start] seats_taken=49/50   accepted=0   enrolments=0
+  Session A: SELECT ... FOR UPDATE -> seats_taken=49; row is now locked
+  Session B: SELECT ... FOR UPDATE -> BLOCKS, waiting for A to finish
+  Session A COMMIT -> lock released
+  Session B unblocks and reads seats_taken=50 -- the fresh value, not the stale one
+  Session B: 0 seats remaining -> application logic refuses, ROLLBACK
+  [end] seats_taken=50/50   accepted=1   enrolments=1
+  CORRECT: counter matches enrolments. B was refused instead of silently overwriting A.
+
+======================================================================
+DEMO 5   SERIALIZABLE ISOLATION (optimistic concurrency control)
+======================================================================
+  [start] seats_taken=49/50   accepted=0   enrolments=0
+  Session A (SERIALIZABLE) reads seats_taken = 49
+  Session B (SERIALIZABLE) reads seats_taken = 49
+  Session A COMMIT -> success
+  Session B ABORTS: SQLSTATE 40001 (SerializationFailure)
+    could not serialize access due to concurrent update
+  Session B rolled back. The application must catch 40001 and retry.
+  [end] seats_taken=50/50   accepted=1   enrolments=1
+
+======================================================================
+DEMO 6   CHECK CONSTRAINT AS THE LAST-RESORT BACKSTOP
+======================================================================
+  Cohort forced to full: seats_taken = seat_capacity = 50
+  Now attempting to allocate one more seat anyway...
+  REJECTED: SQLSTATE 23514 (CheckViolation)
+    new row for relation "cohort" violates check constraint "ck_cohort_seats"
+    DETAIL:  Failing row contains (999, 1, RACE-TEST, 2026-05-11, 2026-08-21, 2026-09-07, 50, 51).
+

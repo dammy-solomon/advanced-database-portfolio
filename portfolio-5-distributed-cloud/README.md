@@ -112,15 +112,23 @@ primary. For NOU the engagement dashboard can tolerate a few seconds of
 staleness; a check on whether a learner has paid cannot. Same cluster, same
 data, opposite correct settings.
 
-### What the free tier withholds
+### What the free tier actually allows
 
-`rs.status()` fails on M0 with a "not authorized" error. That is a finding,
-not a defect. Managed tiers trade administrative control for zero
-operational burden: on a self-managed replica set you would own `rs.conf()`,
-stepdowns and election tuning; on M0 the provider owns them, and in exchange
-you never patch, back up or fail over anything. For a university with no
-dedicated DBA, that is a good trade. For an organisation that needs custom
-election priorities across regions, it is not.
+`rs.status()` was expected to fail on M0 — managed free tiers usually
+restrict administrative commands. It did not. The full replica set status is
+readable, including `votingMembersCount: 3`, `majorityVoteCount: 2`,
+`heartbeatIntervalMillis: 2000` and an election term of 150.
+
+That last figure is worth noting: the set has been through 150 elections, so
+primary membership genuinely rotates rather than being fixed.
+
+`majorityVoteCount: 2` is also the concrete meaning of `w: "majority"` in
+the write concern section above — on a three-node set, a majority is two
+acknowledgements.
+
+The trade-off with managed tiers is therefore narrower than assumed: reads
+of cluster state are permitted, and what M0 withholds is *control* —
+reconfiguring members, forcing stepdowns, tuning election priorities.
 
 ---
 

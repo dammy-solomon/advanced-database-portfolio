@@ -127,20 +127,12 @@ drifting.
 
 ## 5. Implementation notes
 
-<!-- WRITE THIS SECTION YOURSELF — it is the evidence of individual
-     understanding the brief asks for in section 8(iv). Things worth
-     covering, in your own words:
+## 5. Implementation notes
 
-     - Which part of the design you changed your mind about, and why.
-     - The random() bug: the first version of the generator used
-       CROSS JOIN LATERAL (SELECT random()) to get a per-row value. The
-       planner hoisted it into an InitPlan and evaluated it once, so all
-       120,000 applications came out with the same status. Describe how
-       you spotted it (the status distribution came back as 120000/0/0)
-       and why the hash-based rnd01() fixes it.
-     - Why you capped acceptances at 80% of seat_capacity instead of
-       letting the status distribution run free.
-     - Anything you found harder than expected.
--->
+**Design choices I changed my mind about.** Early on, I considered using natural keys (such as `person_ref` or `programme_code`) as primary keys across the schema. Once I mapped out the 13 tables, carrying composite natural keys through `application`, `enrolment`, and `course_registration` made foreign keys bulky and awkward to join. Switching to generated surrogate keys everywhere while enforcing the real business keys via `UNIQUE` constraints (`(applicant_id, cohort_id)`, `(application_id, doc_type)`) gave me clean joins without weakening data integrity. I also moved applicant deduplication from `email` to `person_ref` after realising returning applicants often apply with a different email address.
 
-_To be completed._
+**The `random()` generator bug.** In the first draft of `03_generate_synthetic_data.sql`, I used `CROSS JOIN LATERAL (SELECT random())` to assign each application a status. When I checked the distribution afterwards, all 120,000 rows had landed in a single status (`120000 / 0 / 0`). Because the lateral subquery did not reference any column from the outer row, PostgreSQL's planner hoisted it into an `InitPlan` and evaluated it once for the entire statement. Replacing `random()` with an `IMMUTABLE` hash-based function (`rnd01()`) keyed on each row's identifier fixed the distribution immediately and made the entire 1.28M-row dataset deterministic across rebuilds.
+
+**Capping acceptances at 80% of seat capacity.** Rather than letting synthetic acceptances run unconstrained, I capped generated acceptances at 80% of `cohort.seat_capacity`. Without that ceiling, random variance pushed several cohorts past capacity and triggered `ck_cohort_capacity` (`seats_taken <= seat_capacity`), while leaving 20% headroom ensured realistic open cohorts remained available for query and transaction testing in Portfolios 2 and 3.
+
+**What proved harder than expected.** Keeping lifecycle timestamps consistent across parent and child tables (`submitted_at` → `decided_at` → `settled_at` → `enrolled_on`) took several iterations. Enforcing timestamp rules with table-level `CHECK` constraints meant the synthetic data generator had to derive every downstream date from its predecessor rather than generating timestamps independently.

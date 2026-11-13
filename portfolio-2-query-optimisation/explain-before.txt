@@ -1,209 +1,205 @@
-========================================================================
--- Q1: Admissions officer conversion rate for the two 2026 intakes.
-========================================================================
-                                                                              QUERY PLAN                                                                               
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=4461.86..4462.04 rows=72 width=72) (actual time=38.102..38.168 rows=40 loops=1)
+SET
+====================== Q1 : officer conversion (reporting) ======================
+                                                                                QUERY PLAN                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=4394.15..4394.33 rows=72 width=72) (actual time=54.244..60.341 rows=40.00 loops=1)
    Sort Key: (round(((100.0 * (count(*) FILTER (WHERE ((a.status)::text = 'accepted'::text)))::numeric) / (count(*))::numeric), 2)) DESC, (count(*)) DESC
    Sort Method: quicksort  Memory: 27kB
-   Buffers: shared hit=1917
-   ->  Finalize GroupAggregate  (cost=4449.02..4459.64 rows=72 width=72) (actual time=38.038..38.133 rows=40 loops=1)
-         Group Key: s.staff_no, s.full_name
-         Buffers: shared hit=1911
-         ->  Gather Merge  (cost=4449.02..4457.30 rows=72 width=40) (actual time=38.021..38.096 rows=80 loops=1)
+   Buffers: shared hit=1889
+   ->  Finalize GroupAggregate  (cost=4375.49..4391.93 rows=72 width=72) (actual time=54.164..60.304 rows=40.00 loops=1)
+         Group Key: s.staff_no
+         Buffers: shared hit=1883
+         ->  Gather Merge  (cost=4375.49..4389.39 rows=122 width=40) (actual time=54.144..60.259 rows=80.00 loops=1)
                Workers Planned: 1
                Workers Launched: 1
-               Buffers: shared hit=1911
-               ->  Sort  (cost=3449.01..3449.19 rows=72 width=40) (actual time=32.704..32.713 rows=40 loops=2)
-                     Sort Key: s.staff_no, s.full_name
+               Buffers: shared hit=1883
+               ->  Sort  (cost=3375.48..3375.66 rows=72 width=40) (actual time=36.157..36.160 rows=40.00 loops=2)
+                     Sort Key: s.staff_no
                      Sort Method: quicksort  Memory: 27kB
-                     Buffers: shared hit=1911
+                     Buffers: shared hit=1883
                      Worker 0:  Sort Method: quicksort  Memory: 27kB
-                     ->  Partial HashAggregate  (cost=3446.07..3446.79 rows=72 width=40) (actual time=32.652..32.662 rows=40 loops=2)
-                           Group Key: s.staff_no, s.full_name
-                           Batches: 1  Memory Usage: 24kB
-                           Buffers: shared hit=1903
-                           Worker 0:  Batches: 1  Memory Usage: 24kB
-                           ->  Hash Join  (cost=7.02..3078.42 rows=29412 width=34) (actual time=0.106..23.136 rows=25000 loops=2)
+                     ->  Partial HashAggregate  (cost=3372.54..3373.26 rows=72 width=40) (actual time=36.076..36.082 rows=40.00 loops=2)
+                           Group Key: s.staff_no
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared hit=1875
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           ->  Hash Join  (cost=7.02..3078.42 rows=29412 width=34) (actual time=0.258..31.510 rows=25000.00 loops=2)
                                  Hash Cond: (a.officer_id = s.staff_id)
-                                 Buffers: shared hit=1903
-                                 ->  Hash Join  (cost=3.40..2993.05 rows=29412 width=14) (actual time=0.046..20.544 rows=25000 loops=2)
+                                 Buffers: shared hit=1875
+                                 ->  Hash Join  (cost=3.40..2993.05 rows=29412 width=14) (actual time=0.133..27.571 rows=25000.00 loops=2)
                                        Hash Cond: (a.cohort_id = c.cohort_id)
-                                       Buffers: shared hit=1885
-                                       ->  Parallel Seq Scan on application a  (cost=0.00..2746.35 rows=88235 width=16) (actual time=0.005..10.646 rows=75000 loops=2)
+                                       Buffers: shared hit=1871
+                                       ->  Parallel Seq Scan on application a  (cost=0.00..2746.35 rows=88235 width=16) (actual time=0.019..12.617 rows=75001.00 loops=2)
                                              Buffers: shared hit=1864
-                                       ->  Hash  (cost=3.05..3.05 rows=28 width=2) (actual time=0.022..0.023 rows=28 loops=2)
+                                       ->  Hash  (cost=3.05..3.05 rows=28 width=2) (actual time=0.096..0.097 rows=28.00 loops=2)
                                              Buckets: 1024  Batches: 1  Memory Usage: 9kB
                                              Buffers: shared hit=7
-                                             ->  Seq Scan on cohort c  (cost=0.00..3.05 rows=28 width=2) (actual time=0.010..0.017 rows=28 loops=2)
+                                             ->  Seq Scan on cohort c  (cost=0.00..3.05 rows=28 width=2) (actual time=0.073..0.089 rows=28.00 loops=2)
                                                    Filter: ((intake_code)::text = ANY ('{MAY-2026,SEP-2026}'::text[]))
-                                                   Rows Removed by Filter: 56
+                                                   Rows Removed by Filter: 57
                                                    Buffers: shared hit=7
-                                 ->  Hash  (cost=2.72..2.72 rows=72 width=28) (actual time=0.036..0.036 rows=72 loops=2)
+                                 ->  Hash  (cost=2.72..2.72 rows=72 width=28) (actual time=0.112..0.113 rows=72.00 loops=2)
                                        Buckets: 1024  Batches: 1  Memory Usage: 13kB
                                        Buffers: shared hit=4
-                                       ->  Seq Scan on staff s  (cost=0.00..2.72 rows=72 width=28) (actual time=0.014..0.021 rows=72 loops=2)
+                                       ->  Seq Scan on staff s  (cost=0.00..2.72 rows=72 width=28) (actual time=0.076..0.091 rows=72.00 loops=2)
                                              Buffers: shared hit=4
  Planning:
-   Buffers: shared hit=458
- Planning Time: 0.662 ms
- Execution Time: 38.285 ms
+   Buffers: shared hit=472
+ Planning Time: 2.349 ms
+ Execution Time: 60.509 ms
 (45 rows)
 
 
-========================================================================
--- Q2: An admissions officer's open review queue for one cohort (operational).
-========================================================================
-                                                                   QUERY PLAN                                                                   
-------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Merge  (cost=4449.74..4450.31 rows=5 width=53) (actual time=25.357..25.883 rows=8 loops=1)
+====================== Q2 : officer review queue (operational) ==================
+                                                                    QUERY PLAN                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ Gather Merge  (cost=4449.74..4450.65 rows=8 width=53) (actual time=36.441..41.853 rows=8.00 loops=1)
    Workers Planned: 1
    Workers Launched: 1
-   Buffers: shared hit=1900
-   ->  Sort  (cost=3449.73..3449.74 rows=5 width=53) (actual time=22.302..22.303 rows=4 loops=2)
+   Buffers: shared hit=1896
+   ->  Sort  (cost=3449.73..3449.74 rows=5 width=53) (actual time=11.181..11.183 rows=4.00 loops=2)
          Sort Key: a.submitted_at
          Sort Method: quicksort  Memory: 25kB
-         Buffers: shared hit=1900
+         Buffers: shared hit=1896
          Worker 0:  Sort Method: quicksort  Memory: 25kB
-         ->  Nested Loop  (cost=0.29..3449.67 rows=5 width=53) (actual time=0.346..22.280 rows=4 loops=2)
-               Buffers: shared hit=1892
-               ->  Parallel Seq Scan on application a  (cost=0.00..3408.12 rows=5 width=34) (actual time=0.335..22.246 rows=4 loops=2)
+         ->  Nested Loop  (cost=0.29..3449.67 rows=5 width=53) (actual time=0.406..11.120 rows=4.00 loops=2)
+               Buffers: shared hit=1888
+               ->  Parallel Seq Scan on application a  (cost=0.00..3408.12 rows=5 width=34) (actual time=0.378..10.911 rows=4.00 loops=2)
                      Filter: (((status)::text = ANY ('{submitted,under_review}'::text[])) AND (officer_id = 7) AND (cohort_id = 6))
-                     Rows Removed by Filter: 74996
-                     Buffers: shared hit=1867
-               ->  Index Scan using applicant_pkey on applicant ap  (cost=0.29..8.31 rows=1 width=35) (actual time=0.006..0.006 rows=1 loops=8)
+                     Rows Removed by Filter: 74997
+                     Buffers: shared hit=1864
+               ->  Index Scan using applicant_pkey on applicant ap  (cost=0.29..8.31 rows=1 width=35) (actual time=0.049..0.049 rows=1.00 loops=8)
                      Index Cond: (applicant_id = a.applicant_id)
-                     Buffers: shared hit=25
+                     Index Searches: 8
+                     Buffers: shared hit=24
  Planning:
-   Buffers: shared hit=346
- Planning Time: 0.568 ms
- Execution Time: 25.918 ms
-(22 rows)
+   Buffers: shared hit=112
+ Planning Time: 1.035 ms
+ Execution Time: 41.896 ms
+(23 rows)
 
 
-========================================================================
--- Q3: Accepted applicants who never completed an acceptance-fee payment.
-========================================================================
-                                                                              QUERY PLAN                                                                               
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Merge  (cost=13206.13..14972.76 rows=15362 width=70) (actual time=61.082..62.874 rows=2673 loops=1)
+====================== Q3 : accepted without acceptance payment =================
+                                                                                QUERY PLAN                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Gather Merge  (cost=13176.27..16090.50 rows=25570 width=70) (actual time=76.978..85.210 rows=2673.00 loops=1)
    Workers Planned: 1
    Workers Launched: 1
-   Buffers: shared hit=6902
-   ->  Sort  (cost=12206.12..12244.53 rows=15362 width=70) (actual time=58.476..58.543 rows=1336 loops=2)
+   Buffers: shared hit=6811
+   ->  Sort  (cost=12176.26..12213.86 rows=15041 width=70) (actual time=58.485..58.534 rows=1336.50 loops=2)
          Sort Key: c.intake_code, a.application_id
-         Sort Method: quicksort  Memory: 224kB
-         Buffers: shared hit=6902
-         Worker 0:  Sort Method: quicksort  Memory: 103kB
-         ->  Hash Join  (cost=7930.61..11137.92 rows=15362 width=70) (actual time=41.467..57.523 rows=1336 loops=2)
+         Sort Method: quicksort  Memory: 166kB
+         Buffers: shared hit=6811
+         Worker 0:  Sort Method: quicksort  Memory: 164kB
+         ->  Hash Join  (cost=7928.13..11132.67 rows=15041 width=70) (actual time=46.307..57.324 rows=1336.50 loops=2)
                Hash Cond: (a.cohort_id = c.cohort_id)
-               Buffers: shared hit=6857
-               ->  Parallel Hash Join  (cost=7926.72..11091.67 rows=15362 width=63) (actual time=39.331..55.214 rows=1336 loops=2)
+               Buffers: shared hit=6795
+               ->  Parallel Hash Join  (cost=7924.24..11087.31 rows=15041 width=63) (actual time=46.199..56.969 rows=1336.50 loops=2)
                      Hash Cond: (ap.applicant_id = a.applicant_id)
-                     Buffers: shared hit=6806
-                     ->  Parallel Seq Scan on applicant ap  (cost=0.00..2809.88 rows=70588 width=61) (actual time=0.007..10.001 rows=60000 loops=2)
+                     Buffers: shared hit=6791
+                     ->  Parallel Seq Scan on applicant ap  (cost=0.00..2809.88 rows=70588 width=61) (actual time=0.013..4.065 rows=60001.00 loops=2)
                            Buffers: shared hit=2104
-                     ->  Parallel Hash  (cost=7734.69..7734.69 rows=15362 width=18) (actual time=36.671..36.674 rows=1336 loops=2)
+                     ->  Parallel Hash  (cost=7736.23..7736.23 rows=15041 width=18) (actual time=46.055..46.057 rows=1336.50 loops=2)
                            Buckets: 32768  Batches: 1  Memory Usage: 416kB
                            Buffers: shared hit=4687
-                           ->  Parallel Hash Right Anti Join  (cost=3208.34..7734.69 rows=15362 width=18) (actual time=34.618..35.299 rows=1336 loops=2)
+                           ->  Parallel Hash Right Anti Join  (cost=3205.39..7736.23 rows=15041 width=18) (actual time=43.466..44.471 rows=1336.50 loops=2)
                                  Hash Cond: (p.application_id = a.application_id)
                                  Buffers: shared hit=4687
-                                 ->  Parallel Seq Scan on payment p  (cost=0.00..4437.92 rows=18047 width=8) (actual time=9.076..11.231 rows=15176 loops=2)
+                                 ->  Parallel Seq Scan on payment p  (cost=0.00..4437.92 rows=18665 width=8) (actual time=23.825..29.075 rows=15176.00 loops=2)
                                        Filter: (((purpose)::text = 'acceptance_fee'::text) AND ((status)::text = 'success'::text))
                                        Rows Removed by Filter: 76336
                                        Buffers: shared hit=2823
-                                 ->  Parallel Hash  (cost=2966.94..2966.94 rows=19312 width=18) (actual time=14.754..14.755 rows=16512 loops=2)
-                                       Buckets: 65536  Batches: 1  Memory Usage: 2368kB
+                                 ->  Parallel Hash  (cost=2966.94..2966.94 rows=19076 width=18) (actual time=11.341..11.342 rows=16512.00 loops=2)
+                                       Buckets: 32768  Batches: 1  Memory Usage: 2080kB
                                        Buffers: shared hit=1864
-                                       ->  Parallel Seq Scan on application a  (cost=0.00..2966.94 rows=19312 width=18) (actual time=8.055..11.734 rows=16512 loops=2)
+                                       ->  Parallel Seq Scan on application a  (cost=0.00..2966.94 rows=19076 width=18) (actual time=11.371..16.701 rows=33024.00 loops=1)
                                              Filter: ((status)::text = 'accepted'::text)
-                                             Rows Removed by Filter: 58488
+                                             Rows Removed by Filter: 116978
                                              Buffers: shared hit=1864
-               ->  Hash  (cost=2.84..2.84 rows=84 width=11) (actual time=0.032..0.033 rows=84 loops=2)
+               ->  Hash  (cost=2.84..2.84 rows=84 width=11) (actual time=0.096..0.096 rows=85.00 loops=2)
                      Buckets: 1024  Batches: 1  Memory Usage: 12kB
                      Buffers: shared hit=4
-                     ->  Seq Scan on cohort c  (cost=0.00..2.84 rows=84 width=11) (actual time=0.013..0.019 rows=84 loops=2)
+                     ->  Seq Scan on cohort c  (cost=0.00..2.84 rows=84 width=11) (actual time=0.064..0.081 rows=85.00 loops=2)
                            Buffers: shared hit=4
  Planning:
-   Buffers: shared hit=370
- Planning Time: 0.775 ms
- Execution Time: 63.056 ms
+   Buffers: shared hit=72
+ Planning Time: 0.833 ms
+ Execution Time: 85.353 ms
 (43 rows)
 
 
-========================================================================
--- Q4: One success advisor's contact history over a 90-day window (operational).
-========================================================================
+====================== Q4 : advisor contact history (operational) ===============
                                                                                            QUERY PLAN                                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Merge  (cost=6791.60..6871.99 rows=699 width=44) (actual time=29.233..29.468 rows=1236 loops=1)
+ Gather Merge  (cost=6791.43..6926.26 rows=1183 width=44) (actual time=49.651..55.489 rows=1236.00 loops=1)
    Workers Planned: 1
    Workers Launched: 1
-   Buffers: shared hit=3265
-   ->  Sort  (cost=5791.59..5793.34 rows=699 width=44) (actual time=24.627..24.684 rows=618 loops=2)
+   Buffers: shared hit=3188
+   ->  Sort  (cost=5791.42..5793.16 rows=696 width=44) (actual time=31.195..31.227 rows=618.00 loops=2)
          Sort Key: i.occurred_at DESC
-         Sort Method: quicksort  Memory: 75kB
-         Buffers: shared hit=3265
-         Worker 0:  Sort Method: quicksort  Memory: 65kB
-         ->  Hash Join  (cost=1119.04..5758.57 rows=699 width=44) (actual time=10.904..24.443 rows=618 loops=2)
+         Sort Method: quicksort  Memory: 124kB
+         Buffers: shared hit=3188
+         Worker 0:  Sort Method: quicksort  Memory: 31kB
+         ->  Hash Join  (cost=1119.04..5758.56 rows=696 width=44) (actual time=11.128..30.937 rows=618.00 loops=2)
                Hash Cond: (i.enrolment_id = e.enrolment_id)
-               Buffers: shared hit=3228
-               ->  Parallel Seq Scan on advisor_interaction i  (cost=0.00..4637.69 rows=699 width=35) (actual time=0.198..13.624 rows=618 loops=2)
-                     Filter: ((occurred_at >= '2026-01-01 00:00:00+00'::timestamp with time zone) AND (occurred_at < '2026-04-01 00:00:00+00'::timestamp with time zone) AND (advisor_id = 45))
+               Buffers: shared hit=3180
+               ->  Parallel Seq Scan on advisor_interaction i  (cost=0.00..4637.69 rows=696 width=35) (actual time=0.774..20.379 rows=618.00 loops=2)
+                     Filter: ((occurred_at >= '2026-01-01 00:00:00+01'::timestamp with time zone) AND (occurred_at < '2026-04-01 00:00:00+01'::timestamp with time zone) AND (advisor_id = 45))
                      Rows Removed by Filter: 106710
                      Buffers: shared hit=2428
-               ->  Hash  (cost=706.24..706.24 rows=33024 width=25) (actual time=10.450..10.450 rows=33024 loops=2)
+               ->  Hash  (cost=706.24..706.24 rows=33024 width=25) (actual time=10.210..10.210 rows=33024.00 loops=2)
                      Buckets: 65536  Batches: 1  Memory Usage: 2576kB
                      Buffers: shared hit=752
-                     ->  Seq Scan on enrolment e  (cost=0.00..706.24 rows=33024 width=25) (actual time=0.008..2.415 rows=33024 loops=2)
+                     ->  Seq Scan on enrolment e  (cost=0.00..706.24 rows=33024 width=25) (actual time=0.064..4.645 rows=33024.00 loops=2)
                            Buffers: shared hit=752
  Planning:
-   Buffers: shared hit=264
- Planning Time: 0.458 ms
- Execution Time: 29.731 ms
+   Buffers: shared hit=103
+ Planning Time: 0.872 ms
+ Execution Time: 55.964 ms
 (25 rows)
 
 
-========================================================================
--- Q5: Single-learner lookup by stable person reference (point query).
-========================================================================
-                                                                                  QUERY PLAN                                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- GroupAggregate  (cost=18.17..18.28 rows=4 width=71) (actual time=0.075..0.076 rows=1 loops=1)
-   Group Key: ap.first_name, ap.last_name, a.status, c.intake_code, e.learner_no
-   Buffers: shared hit=22
-   ->  Sort  (cost=18.17..18.18 rows=4 width=71) (actual time=0.070..0.071 rows=4 loops=1)
-         Sort Key: ap.first_name, ap.last_name, a.status, c.intake_code, e.learner_no
+====================== Q5 : learner lookup (point query) ========================
+                                                                                   QUERY PLAN                                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=18.17..18.26 rows=4 width=71) (actual time=0.181..0.182 rows=1.00 loops=1)
+   Group Key: a.status, c.intake_code, e.learner_no
+   Buffers: shared hit=17
+   ->  Sort  (cost=18.17..18.18 rows=4 width=71) (actual time=0.177..0.178 rows=4.00 loops=1)
+         Sort Key: a.status, c.intake_code, e.learner_no
          Sort Method: quicksort  Memory: 25kB
-         Buffers: shared hit=22
-         ->  Nested Loop Left Join  (cost=1.69..18.13 rows=4 width=71) (actual time=0.044..0.048 rows=4 loops=1)
-               Buffers: shared hit=19
-               ->  Nested Loop Left Join  (cost=1.27..17.36 rows=1 width=71) (actual time=0.039..0.041 rows=1 loops=1)
-                     Buffers: shared hit=15
-                     ->  Nested Loop  (cost=0.98..17.04 rows=1 width=54) (actual time=0.033..0.035 rows=1 loops=1)
-                           Buffers: shared hit=12
-                           ->  Nested Loop  (cost=0.84..16.88 rows=1 width=47) (actual time=0.027..0.030 rows=1 loops=1)
-                                 Buffers: shared hit=10
-                                 ->  Index Scan using applicant_person_ref_key on applicant ap  (cost=0.42..8.44 rows=1 width=35) (actual time=0.013..0.013 rows=1 loops=1)
+         Buffers: shared hit=17
+         ->  Nested Loop Left Join  (cost=1.69..18.13 rows=4 width=71) (actual time=0.165..0.168 rows=4.00 loops=1)
+               Buffers: shared hit=17
+               ->  Nested Loop Left Join  (cost=1.27..17.36 rows=1 width=71) (actual time=0.130..0.132 rows=1.00 loops=1)
+                     Buffers: shared hit=13
+                     ->  Nested Loop  (cost=0.98..17.04 rows=1 width=54) (actual time=0.109..0.111 rows=1.00 loops=1)
+                           Buffers: shared hit=10
+                           ->  Nested Loop  (cost=0.84..16.88 rows=1 width=47) (actual time=0.102..0.103 rows=1.00 loops=1)
+                                 Buffers: shared hit=8
+                                 ->  Index Scan using applicant_person_ref_key on applicant ap  (cost=0.42..8.44 rows=1 width=35) (actual time=0.074..0.075 rows=1.00 loops=1)
                                        Index Cond: ((person_ref)::text = 'NOU-P-00057431'::text)
+                                       Index Searches: 1
                                        Buffers: shared hit=4
-                                 ->  Index Scan using uq_application_per_cohort on application a  (cost=0.42..8.44 rows=1 width=28) (actual time=0.010..0.012 rows=1 loops=1)
+                                 ->  Index Scan using uq_application_per_cohort on application a  (cost=0.42..8.44 rows=1 width=28) (actual time=0.025..0.025 rows=1.00 loops=1)
                                        Index Cond: (applicant_id = ap.applicant_id)
-                                       Buffers: shared hit=6
-                           ->  Index Scan using cohort_pkey on cohort c  (cost=0.14..0.16 rows=1 width=11) (actual time=0.005..0.005 rows=1 loops=1)
+                                       Index Searches: 1
+                                       Buffers: shared hit=4
+                           ->  Index Scan using cohort_pkey on cohort c  (cost=0.14..0.16 rows=1 width=11) (actual time=0.006..0.006 rows=1.00 loops=1)
                                  Index Cond: (cohort_id = a.cohort_id)
+                                 Index Searches: 1
                                  Buffers: shared hit=2
-                     ->  Index Scan using enrolment_application_id_key on enrolment e  (cost=0.29..0.32 rows=1 width=33) (actual time=0.005..0.005 rows=1 loops=1)
+                     ->  Index Scan using enrolment_application_id_key on enrolment e  (cost=0.29..0.32 rows=1 width=33) (actual time=0.020..0.020 rows=1.00 loops=1)
                            Index Cond: (application_id = a.application_id)
+                           Index Searches: 1
                            Buffers: shared hit=3
-               ->  Index Scan using uq_registration on course_registration cr  (cost=0.42..0.73 rows=4 width=16) (actual time=0.005..0.006 rows=4 loops=1)
+               ->  Index Scan using uq_registration on course_registration cr  (cost=0.42..0.73 rows=4 width=16) (actual time=0.034..0.034 rows=4.00 loops=1)
                      Index Cond: (enrolment_id = e.enrolment_id)
+                     Index Searches: 1
                      Buffers: shared hit=4
  Planning:
-   Buffers: shared hit=544
- Planning Time: 1.027 ms
- Execution Time: 0.138 ms
-(34 rows)
-
+   Buffers: shared hit=102
+ Planning Time: 1.268 ms
+ Execution Time: 0.281 ms
+(39 rows)
 

@@ -185,6 +185,17 @@ matching interactions themselves. Extracting those still needs `$unwind` and
 `$match`. Embedding makes the parent cheap to fetch and the children harder
 to filter.
 
+### Measured results
+
+| | Documents examined | Execution time |
+|---|---|---|
+| Before indexing (COLLSCAN) | 33,024 | 28 ms |
+| After indexing (IXSCAN on `idx_advisor_status`) | 1,051 | 10 ms |
+
+The query returns 1,051 learner documents. Without an index MongoDB examined
+all 33,024 documents to find them; with the index it examined exactly 1,051
+and no more — a 31× reduction in documents touched.
+
 ---
 
 ## 7. Implementation notes

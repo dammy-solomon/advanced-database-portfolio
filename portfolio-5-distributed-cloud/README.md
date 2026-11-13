@@ -11,7 +11,7 @@ abstract. Both are demonstrated on running systems, not described.
 |---|---|---|
 | Horizontal partitioning / sharding | PostgreSQL 18.6, local | `01_partitioning_postgres.sql`, partition pruning in EXPLAIN |
 | Replication, write concern, read preference | MongoDB Atlas M0, three-node replica set, Paris | `02_replication_mongodb.js`, `db.hello()` output |
-| Managed-cloud trade-offs | Atlas M0 | restricted `rs.status()` |
+| Managed-cloud trade-offs | Atlas M0 | `rs.status()` and `db.hello()` output |
 
 ---
 

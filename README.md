@@ -5,6 +5,7 @@
 **Email:** d.solomon3851@miva.edu.ng
 **Session:** 2026/2027, First Semester Continuous Assessment
 **Cohort:** September 2026
+**Repository:** https://github.com/dammy-solomon/advanced-database-portfolio
 
 ---
 

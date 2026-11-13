@@ -51,16 +51,17 @@ that does not exist in an unpartitioned table.
 
 Two conclusions, and the second matters more.
 
-**Pruning works and is worth roughly 2×** — 6.6 ms against 13.7 ms for the
+**Pruning works and is worth roughly 4.7×** — 17.5 ms against 82.0 ms for the
 same answer. The plan shows `Seq Scan on application_2026` with no mention
 of the other three partitions. They were eliminated at planning time, never
 read.
 
 **Partitioning without a partition-key predicate is actively worse.** The
-unbounded query took 34.2 ms against 13.7 ms unpartitioned — more than twice
-as slow, because `Parallel Append` must scan every partition and combine the
-results. Partitioning does not make a table faster. It makes *queries that
-filter on the partition key* faster, and makes everything else slower.
+unbounded query took 193.9 ms against 82.0 ms unpartitioned — nearly two and
+a half times as slow, because `Parallel Append` must scan every partition
+and combine the results. Partitioning does not make a table faster. It makes
+*queries that filter on the partition key* faster, and makes everything else
+slower.
 
 That is the central design lesson: the partition key must match the access
 pattern. `submitted_at` is right for NOU because admissions reporting is
@@ -200,17 +201,8 @@ MongoDB shell.
 
 ## 6. Implementation notes
 
-<!-- WRITE THIS YOURSELF.
-     (HTML comment - invisible in GitHub's rendered view. Click "Raw" or
-     the edit pencil to read it.)
+When Session B stopped responding in Part 3, my first assumption was that something had gone wrong with the server. It had not. B was waiting on the lock Session A held on the cohort row, and would have waited indefinitely until A committed. I had not expected a correctly working database to simply stop and wait — I expected it to either succeed or return an error.
 
-     Strong material here:
-     - The unbounded partitioned query being SLOWER than unpartitioned.
-       Did you expect that? What does it tell you about choosing a
-       partition key?
-     - Having to widen the primary key to include submitted_at.
-     - rs.status() being refused, and what you think of that trade.
-     - Whether you would actually run two databases for a real
-       university, or keep it all in PostgreSQL. -->
+The lost update in Part 2 was the opposite problem, and the more worrying one. Two learners were enrolled while the seat counter advanced by one, and neither session reported anything wrong. An error would have been better, because I would have detected the anomaly immediately instead of discovering it only by counting rows afterwards. Silent incorrect data is harder to find than a failure.
 
-_To be completed._
+My first attempt at the SERIALIZABLE demonstration produced SQLSTATE 23514, the capacity check constraint, rather than the 40001 serialization failure I was expecting. The cause was timing: Session B read the counter after Session A had already committed, so B saw 50 where A had seen 49. With no overlap between the two transactions there was no conflict for PostgreSQL to detect, and B simply tried to exceed capacity. Repeating it with both reads taken before either commit produced 40001 as expected. The lesson is that serialization failures depend on transactions genuinely overlapping, not merely on both using SERIALIZABLE.

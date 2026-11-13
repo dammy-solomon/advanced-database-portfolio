@@ -52,7 +52,7 @@ activities.
 | 4 | NoSQL and Advanced Data Models | [`portfolio-4-nosql/`](portfolio-4-nosql/) |
 | 5 | Distributed and Cloud Databases | [`portfolio-5-distributed-cloud/`](portfolio-5-distributed-cloud/) |
 
-Supporting screenshots and evidence are in [`docs/screenshots/`](docs/screenshots/).
+Supporting screenshots and evidence are in [`docs-screenshots/`](docs-screenshots/).
 
 ---
 

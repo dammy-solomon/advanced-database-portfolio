@@ -30,12 +30,18 @@ genuinely compete.
 
 ## Running the two-session demonstrations
 
-Parts 2, 3 and 4 need two concurrent sessions.
+Parts 2, 3 and 4 need two concurrent sessions. These were run in two separate
+Command Prompt windows, each with its own psql session:
 
-1. Open **two Query Tool tabs** in pgAdmin, both on the `nou` database. Each tab is a separate connection, which is what makes them independent sessions.
-2. **Turn off autocommit in both** — Query Tool toolbar, the `...` menu, untick *Auto commit*. This is essential. With autocommit on, every statement commits immediately and no transaction stays open, so no race can occur.
-3. Run `00_setup_scenario.sql` once.
-4. Work through the numbered steps in each file, alternating tabs as marked. Run one block at a time: select the block and press F5.
+    psql.exe -p 5433 -U postgres -d nou
+
+psql holds a transaction open until an explicit COMMIT or ROLLBACK, so no
+autocommit setting needs changing. Every statement must end in a semicolon —
+without one, psql waits for more input and the prompt changes from `nou=#`
+to `nou-#`.
+
+Run `00_setup_scenario.sql` once, then work through the numbered steps in each
+file, alternating between windows as marked.
 
 In Part 3, Session B's `SELECT ... FOR UPDATE` will appear to hang. That is
 the demonstration working — B is waiting on A's lock. Screenshot it.
@@ -75,11 +81,4 @@ for code that uses neither.
 
 ## Implementation notes
 
-<!-- WRITE THIS YOURSELF. Useful ground to cover:
-     - What you expected Session B to do in Part 2, and what it actually did.
-     - Why the lost update is more dangerous than an error would be.
-     - Which fix you would deploy and why.
-     - What you had to change in pgAdmin to make the demos work (autocommit)
-       and what happened when you first forgot. -->
 
-_To be completed._

@@ -100,11 +100,6 @@ Each portfolio folder has its own README with specific instructions.
 
 ## AI Use Declaration
 
-<!-- CHECK THIS IS ACCURATE BEFORE YOU COMMIT IT. I have described what
-     actually happened in our sessions, but you are the one signing it,
-     so correct anything that does not match your experience and add
-     anything I am not aware of. -->
-
 **Tool used:** Claude (Anthropic).
 
 **What it was used for:**
@@ -128,10 +123,4 @@ any part of this portfolio if selected for verification.
 
 ## Technical reflection
 
-<!-- WRITE THIS YOURSELF — it carries 3 marks on its own and is what the
-     brief points to for evidence of individual understanding. Aim for
-     400-600 words covering: what you found hardest, which design decision
-     you changed your mind about, what surprised you in the performance
-     results, and what you would do differently with more time. -->
 
-_To be completed._

@@ -34,8 +34,6 @@ psql -p 5433 -U postgres -d nou -f explain_all.sql > explain-after.txt
 
 ## Implementation notes
 
-**Why every run starts with a warm-up pass.** In the reproduction commands, running `explain_all.sql > nul` before capturing `explain-before.txt` and `explain-after.txt` was deliberate. Comparing a cold buffer cache against a warm cache would have overstated the impact of my indexes, so priming `shared_buffers` first ensured both runs reflected warm-cache execution plans.
+Running `explain_all.sql > nul` before capturing `explain-before.txt` and `explain-after.txt` primed `shared_buffers` so both runs reflected warm-cache execution rather than cold-disk reads.
 
-**Why index gains varied sharply across queries.** Operational lookups like Q2 (`41.9 ms` → `0.28 ms`, 152× faster) saw dramatic improvements because a targeted composite/partial index isolated the small subset of open applications waiting for officer review without touching historical rows. By contrast, reporting queries like Q1 (`60.5 ms` → `26.3 ms`) and Q3 (`85.4 ms` → `43.2 ms`) still had to aggregate or anti-join large slices of the dataset, so indexing cut execution time roughly in half rather than by orders of magnitude.
-
-**Deciding what not to index.** Looking at `EXPLAIN (ANALYZE, BUFFERS)` stopped me from adding speculative indexes on low-selectivity columns or duplicating existing unique constraints. Q5 (`0.28 ms` → `0.14 ms`) was already an index-only/primary-key lookup, so adding extra indexes there would only have slowed down writes in Portfolio 3 for zero read benefit.
+Index gains varied by workload: Q2 dropped from `41.9 ms` to `0.28 ms` (152× faster) because a filtered index isolated open review queues without scanning historical rows, whereas reporting aggregates like Q1 (`60.5 ms` → `26.3 ms`) and Q3 (`85.4 ms` → `43.2 ms`) still scanned large slices of data. I skipped extra indexes on Q5 (`0.28 ms` → `0.14 ms`) because it already used a primary-key lookup and additional indexes would only add write overhead.

@@ -121,7 +121,3 @@ I remain responsible for the accuracy of everything submitted and can explain
 any part of this portfolio if selected for verification.
 
 ---
-
-## Technical reflection
-
-

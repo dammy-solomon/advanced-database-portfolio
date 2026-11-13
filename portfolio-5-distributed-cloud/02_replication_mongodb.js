@@ -28,18 +28,25 @@ db.hello()
 
 
 // ---------------------------------------------------------------------
-// 2. What the free tier will NOT let you do
+// 2. Full replica set status
 // ---------------------------------------------------------------------
 rs.status()
 
-// On M0 this fails with "not authorized on admin to execute command".
-// That is not a mistake in this script - it is a finding worth
-// recording. Managed cloud tiers trade administrative control for
-// zero operational effort. On a self-managed replica set you would own
-// rs.status(), rs.conf(), stepdown and election control. On M0 the
-// provider owns them and you get a supported cluster instead.
+// This was expected to fail on M0 with "not authorized on admin to
+// execute command", since managed free tiers usually restrict
+// administrative commands. It does not fail - the full status is
+// readable.
 //
-// SCREENSHOT the error. It is evidence of the trade-off, not a failure.
+// Look for:
+//   votingMembersCount: 3   - three full voting members
+//   majorityVoteCount: 2    - what "majority" actually means here
+//   heartbeatIntervalMillis - how often members check each other
+//   term                    - the election term; 150 at time of capture
+//
+// What M0 withholds is control, not visibility: reconfiguring members,
+// forcing stepdowns and tuning election priorities are blocked.
+//
+// SCREENSHOT the output.
 
 
 // ---------------------------------------------------------------------

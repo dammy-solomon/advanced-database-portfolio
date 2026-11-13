@@ -201,8 +201,8 @@ MongoDB shell.
 
 ## 6. Implementation notes
 
-## 6. Implementation notes
+**Why the primary key had to change for partitioning.** Partitioning `application` by `submitted_at` immediately failed until I widened the primary key to `(application_id, submitted_at)`. Because PostgreSQL enforces uniqueness per partition rather than globally across partitions, any `PRIMARY KEY` or `UNIQUE` constraint must include the partition key — the same constraint distributed databases impose when choosing shard keys.
 
-Partitioning `application` by `submitted_at` required widening the primary key to `(application_id, submitted_at)` because PostgreSQL enforces uniqueness per partition rather than globally.
+**Seeing `Parallel Append` penalise unpruned queries.** I expected partitioning to either help or remain neutral, so seeing an unbounded query take `193.9 ms` on the partitioned table versus `82.0 ms` on the unpartitioned table was a useful surprise. While partition pruning cut intake-bounded queries down to `17.5 ms` (4.7× faster), queries without a `submitted_at` predicate forced PostgreSQL into a `Parallel Append` across all partitions, confirming that a poorly chosen partition key degrades general query performance.
 
-Testing confirmed that partitioning only helps queries matching the partition key: intake-bounded queries dropped from `82.0 ms` to `17.5 ms` via partition pruning, while unbounded queries slowed to `193.9 ms` due to `Parallel Append` scanning every partition. On Atlas M0, connecting from Lagos to Paris (`eu-west-3`) added ~120 ms round-trip latency—reinforcing single-document fetches over multi-join round trips—and `rs.status()` unexpectedly exposed full replica-set state (`votingMembersCount: 3`, `majorityVoteCount: 2`, 150 elections).
+**Inspecting the Atlas replica set from Lagos.** Connecting Compass to the Paris (`eu-west-3`) M0 cluster introduced roughly ~120 ms round-trip latency, which reinforces why fetching one embedded learner document in a single round trip matters more over WAN links than on localhost. Running `rs.status()` on the free tier also revealed more cluster telemetry than expected — including `votingMembersCount: 3`, `majorityVoteCount: 2`, and 150 election terms — making `w: "majority"` concrete rather than theoretical.

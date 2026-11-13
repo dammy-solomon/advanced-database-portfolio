@@ -16,11 +16,13 @@ simulated open-university admissions and learner-engagement system.
 
 ## How to reproduce
 
+```
 psql -p 5433 -U postgres -d nou -f explain_all.sql > nul
 psql -p 5433 -U postgres -d nou -f explain_all.sql > explain-before.txt
 psql -p 5433 -U postgres -d nou -f indexes.sql
 psql -p 5433 -U postgres -d nou -f explain_all.sql > nul
 psql -p 5433 -U postgres -d nou -f explain_all.sql > explain-after.txt
+```
 
 ## Headline results
 

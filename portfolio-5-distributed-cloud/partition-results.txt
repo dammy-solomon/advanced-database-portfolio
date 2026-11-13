@@ -1,0 +1,80 @@
+SET
+DROP TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 150002
+CREATE INDEX
+ANALYZE
+    partition     |  rows  |  size   
+------------------+--------+---------
+ application_2024 | 25,000 | 2032 kB
+ application_2025 | 75,000 | 6088 kB
+ application_2026 | 50,002 | 4064 kB
+ application_2027 | 0      | 0 bytes
+(4 rows)
+
+
+=== PRUNED : single year, should scan only application_2026 ===
+                                                                           QUERY PLAN                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1632.97..1632.98 rows=1 width=16) (actual time=17.453..17.454 rows=1.00 loops=1)
+   Buffers: shared hit=508
+   ->  Seq Scan on application_2026 application_part  (cost=0.00..1258.03 rows=49992 width=10) (actual time=0.021..11.746 rows=50002.00 loops=1)
+         Filter: ((submitted_at >= '2026-01-01 00:00:00+01'::timestamp with time zone) AND (submitted_at < '2027-01-01 00:00:00+01'::timestamp with time zone))
+         Buffers: shared hit=508
+ Planning:
+   Buffers: shared hit=70 read=1
+ Planning Time: 0.721 ms
+ Execution Time: 17.484 ms
+(9 rows)
+
+
+=== NOT PRUNED : no partition key predicate, scans all four ===
+                                                                                 QUERY PLAN                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=4186.86..4186.87 rows=1 width=16) (actual time=184.340..193.830 rows=1.00 loops=1)
+   Buffers: shared hit=1523
+   ->  Gather  (cost=4186.64..4186.85 rows=2 width=16) (actual time=79.230..193.818 rows=3.00 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=1523
+         ->  Partial Aggregate  (cost=3186.64..3186.65 rows=1 width=16) (actual time=26.341..26.343 rows=1.00 loops=3)
+               Buffers: shared hit=1523
+               ->  Parallel Append  (cost=0.00..2717.87 rows=62502 width=10) (actual time=0.021..17.907 rows=50000.67 loops=3)
+                     Buffers: shared hit=1523
+                     ->  Parallel Seq Scan on application_2025 application_part_2  (cost=0.00..1202.18 rows=44118 width=10) (actual time=0.019..8.670 rows=37500.00 loops=2)
+                           Buffers: shared hit=761
+                     ->  Parallel Seq Scan on application_2026 application_part_3  (cost=0.00..802.13 rows=29413 width=10) (actual time=0.009..14.113 rows=50002.00 loops=1)
+                           Buffers: shared hit=508
+                     ->  Parallel Seq Scan on application_2024 application_part_1  (cost=0.00..401.06 rows=14706 width=10) (actual time=0.024..6.457 rows=25000.00 loops=1)
+                           Buffers: shared hit=254
+                     ->  Parallel Seq Scan on application_2027 application_part_4  (cost=0.00..0.00 rows=1 width=50) (actual time=0.003..0.003 rows=0.00 loops=1)
+ Planning:
+   Buffers: shared hit=28 read=4
+ Planning Time: 1.033 ms
+ Execution Time: 193.889 ms
+(21 rows)
+
+
+=== BASELINE : unpartitioned application table, same 2026 filter ===
+                                                                                 QUERY PLAN                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=4409.68..4409.69 rows=1 width=16) (actual time=72.182..81.986 rows=1.00 loops=1)
+   Buffers: shared hit=1864
+   ->  Gather  (cost=4409.46..4409.67 rows=2 width=16) (actual time=49.221..81.974 rows=2.00 loops=1)
+         Workers Planned: 1
+         Workers Launched: 1
+         Buffers: shared hit=1864
+         ->  Partial Aggregate  (cost=3409.46..3409.47 rows=1 width=16) (actual time=24.420..24.421 rows=1.00 loops=2)
+               Buffers: shared hit=1864
+               ->  Parallel Seq Scan on application  (cost=0.00..3187.55 rows=29588 width=10) (actual time=0.008..19.793 rows=25001.00 loops=2)
+                     Filter: ((submitted_at >= '2026-01-01 00:00:00+01'::timestamp with time zone) AND (submitted_at < '2027-01-01 00:00:00+01'::timestamp with time zone))
+                     Rows Removed by Filter: 50000
+                     Buffers: shared hit=1864
+ Planning Time: 0.169 ms
+ Execution Time: 82.034 ms
+(14 rows)
+

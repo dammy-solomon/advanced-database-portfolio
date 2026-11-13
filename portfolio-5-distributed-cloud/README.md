@@ -45,9 +45,9 @@ that does not exist in an unpartitioned table.
 
 | Query | Time | What was scanned |
 |---|---|---|
-| Partitioned, bounded to 2026 | **6.6 ms** | `application_2026` only |
-| Partitioned, no date predicate | 34.2 ms | all four partitions (Parallel Append) |
-| Unpartitioned, bounded to 2026 | 13.7 ms | the whole 150,000-row table |
+| Partitioned, bounded to 2026 | **17.5 ms** | `application_2026` only |
+| Partitioned, no date predicate | 193.9 ms | all four partitions (Parallel Append) |
+| Unpartitioned, bounded to 2026 | 82.0 ms | the whole 150,000-row table |
 
 Two conclusions, and the second matters more.
 

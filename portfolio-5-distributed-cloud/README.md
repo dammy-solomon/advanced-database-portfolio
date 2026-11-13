@@ -201,8 +201,8 @@ MongoDB shell.
 
 ## 6. Implementation notes
 
-When Session B stopped responding in Part 3, my first assumption was that something had gone wrong with the server. It had not. B was waiting on the lock Session A held on the cohort row, and would have waited indefinitely until A committed. I had not expected a correctly working database to simply stop and wait — I expected it to either succeed or return an error.
+## 6. Implementation notes
 
-The lost update in Part 2 was the opposite problem, and the more worrying one. Two learners were enrolled while the seat counter advanced by one, and neither session reported anything wrong. An error would have been better, because I would have detected the anomaly immediately instead of discovering it only by counting rows afterwards. Silent incorrect data is harder to find than a failure.
+Partitioning `application` by `submitted_at` required widening the primary key to `(application_id, submitted_at)` because PostgreSQL enforces uniqueness per partition rather than globally.
 
-My first attempt at the SERIALIZABLE demonstration produced SQLSTATE 23514, the capacity check constraint, rather than the 40001 serialization failure I was expecting. The cause was timing: Session B read the counter after Session A had already committed, so B saw 50 where A had seen 49. With no overlap between the two transactions there was no conflict for PostgreSQL to detect, and B simply tried to exceed capacity. Repeating it with both reads taken before either commit produced 40001 as expected. The lesson is that serialization failures depend on transactions genuinely overlapping, not merely on both using SERIALIZABLE.
+Testing confirmed that partitioning only helps queries matching the partition key: intake-bounded queries dropped from `82.0 ms` to `17.5 ms` via partition pruning, while unbounded queries slowed to `193.9 ms` due to `Parallel Append` scanning every partition. On Atlas M0, connecting from Lagos to Paris (`eu-west-3`) added ~120 ms round-trip latency—reinforcing single-document fetches over multi-join round trips—and `rs.status()` unexpectedly exposed full replica-set state (`votingMembersCount: 3`, `majorityVoteCount: 2`, 150 elections).
